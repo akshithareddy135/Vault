@@ -1,5 +1,8 @@
 import customtkinter as ctk
+
 from tkinter import messagebox
+
+from auth import verify_password
 
 from database import (
     create_database,
@@ -9,233 +12,228 @@ from database import (
     list_passwords
 )
 
-# -----------------------------
-# INITIAL SETUP
-# -----------------------------
-
 create_database()
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-app = ctk.CTk()
-app.title("Vault Password Manager")
-app.geometry("700x650")
 
-# -----------------------------
-# CONTROLLER FUNCTIONS
-# -----------------------------
+# ===================================
+# LOGIN
+# ===================================
 
-def add_credential():
+def login():
 
-    website = website_entry.get().strip()
-    username = username_entry.get().strip()
-    password = password_entry.get().strip()
+    password = login_password_entry.get()
 
-    if not website or not username or not password:
-        messagebox.showerror(
-            "Error",
-            "Please fill all fields"
-        )
-        return
+    if verify_password(password):
 
-    add_password(
-        website,
-        username,
-        password
-    )
+        login_window.destroy()
 
-    messagebox.showinfo(
-        "Success",
-        "Credential Saved"
-    )
-
-    clear_fields()
-
-
-def view_credential():
-
-    website = website_entry.get().strip()
-
-    if not website:
-        messagebox.showerror(
-            "Error",
-            "Enter website name"
-        )
-        return
-
-    result = get_password(website)
-
-    if result:
-
-        messagebox.showinfo(
-            "Credential Found",
-            f"Website: {result[0]}\n"
-            f"Username: {result[1]}\n"
-            f"Password: {result[2]}"
-        )
+        open_vault()
 
     else:
 
         messagebox.showerror(
-            "Not Found",
-            "Credential does not exist"
-        )
-
-
-def delete_credential():
-
-    website = website_entry.get().strip()
-
-    if not website:
-        messagebox.showerror(
             "Error",
-            "Enter website name"
+            "Invalid Master Password"
         )
-        return
 
-    delete_password(website)
 
-    messagebox.showinfo(
-        "Deleted",
-        f"{website} removed"
+# ===================================
+# VAULT WINDOW
+# ===================================
+
+def open_vault():
+
+    vault = ctk.CTk()
+
+    vault.title("Vault Password Manager")
+
+    vault.geometry("700x650")
+
+    # -----------------------
+    # FUNCTIONS
+    # -----------------------
+
+    def add_credential():
+
+        website = website_entry.get()
+
+        username = username_entry.get()
+
+        password = password_entry.get()
+
+        if not website or not username or not password:
+
+            messagebox.showerror(
+                "Error",
+                "Fill all fields"
+            )
+
+            return
+
+        add_password(
+            website,
+            username,
+            password
+        )
+
+        messagebox.showinfo(
+            "Success",
+            "Password Saved"
+        )
+
+    def view_credential():
+
+        website = website_entry.get()
+
+        result = get_password(website)
+
+        if result:
+
+            messagebox.showinfo(
+                "Credential Found",
+                f"Website: {result[0]}\n"
+                f"Username: {result[1]}\n"
+                f"Password: {result[2]}"
+            )
+
+        else:
+
+            messagebox.showerror(
+                "Error",
+                "Credential Not Found"
+            )
+
+    def delete_credential():
+
+        website = website_entry.get()
+
+        delete_password(website)
+
+        messagebox.showinfo(
+            "Deleted",
+            "Credential Removed"
+        )
+
+    def show_all():
+
+        output_box.delete(
+            "1.0",
+            "end"
+        )
+
+        records = list_passwords()
+
+        for website, username in records:
+
+            output_box.insert(
+                "end",
+                f"{website} | {username}\n"
+            )
+
+    # -----------------------
+    # UI
+    # -----------------------
+
+    title = ctk.CTkLabel(
+        vault,
+        text="Vault Password Manager",
+        font=("Arial", 28, "bold")
     )
 
-    clear_fields()
+    title.pack(pady=20)
 
-
-def show_credentials():
-
-    records = list_passwords()
-
-    output_box.delete(
-        "1.0",
-        "end"
+    website_entry = ctk.CTkEntry(
+        vault,
+        width=400,
+        placeholder_text="Website"
     )
 
-    if not records:
+    website_entry.pack(pady=10)
 
-        output_box.insert(
-            "end",
-            "Vault is empty."
-        )
+    username_entry = ctk.CTkEntry(
+        vault,
+        width=400,
+        placeholder_text="Username"
+    )
 
-        return
+    username_entry.pack(pady=10)
 
-    for website, username in records:
+    password_entry = ctk.CTkEntry(
+        vault,
+        width=400,
+        placeholder_text="Password"
+    )
 
-        output_box.insert(
-            "end",
-            f"Website: {website}\n"
-            f"Username: {username}\n"
-            f"{'-'*40}\n"
-        )
+    password_entry.pack(pady=10)
+
+    ctk.CTkButton(
+        vault,
+        text="Add Password",
+        command=add_credential
+    ).pack(pady=5)
+
+    ctk.CTkButton(
+        vault,
+        text="View Password",
+        command=view_credential
+    ).pack(pady=5)
+
+    ctk.CTkButton(
+        vault,
+        text="Delete Password",
+        command=delete_credential
+    ).pack(pady=5)
+
+    ctk.CTkButton(
+        vault,
+        text="List Websites",
+        command=show_all
+    ).pack(pady=5)
+
+    output_box = ctk.CTkTextbox(
+        vault,
+        width=500,
+        height=200
+    )
+
+    output_box.pack(pady=20)
+
+    vault.mainloop()
 
 
-def clear_fields():
+# ===================================
+# LOGIN WINDOW
+# ===================================
 
-    website_entry.delete(0, "end")
-    username_entry.delete(0, "end")
-    password_entry.delete(0, "end")
+login_window = ctk.CTk()
 
+login_window.title("Vault Login")
 
-# -----------------------------
-# TITLE
-# -----------------------------
+login_window.geometry("400x250")
 
-title_label = ctk.CTkLabel(
-    app,
-    text="🔐 Vault Password Manager",
-    font=("Arial", 28, "bold")
+title = ctk.CTkLabel(
+    login_window,
+    text="Vault Login",
+    font=("Arial", 24, "bold")
 )
 
-title_label.pack(pady=20)
+title.pack(pady=20)
 
-# -----------------------------
-# INPUT SECTION
-# -----------------------------
-
-website_entry = ctk.CTkEntry(
-    app,
-    width=400,
-    placeholder_text="Website"
+login_password_entry = ctk.CTkEntry(
+    login_window,
+    width=250,
+    placeholder_text="Master Password",show="*"
 )
 
-website_entry.pack(pady=10)
+login_password_entry.pack(pady=10)
 
-username_entry = ctk.CTkEntry(
-    app,
-    width=400,
-    placeholder_text="Username"
-)
+ctk.CTkButton(
+    login_window,
+    text="Login",
+    command=login
+).pack(pady=20)
 
-username_entry.pack(pady=10)
-
-password_entry = ctk.CTkEntry(
-    app,
-    width=400,
-    placeholder_text="Password"
-)
-
-password_entry.pack(pady=10)
-
-# -----------------------------
-# BUTTONS
-# -----------------------------
-
-add_button = ctk.CTkButton(
-    app,
-    text="Add Password",
-    command=add_credential
-)
-
-add_button.pack(pady=5)
-
-view_button = ctk.CTkButton(
-    app,
-    text="View Password",
-    command=view_credential
-)
-
-view_button.pack(pady=5)
-
-delete_button = ctk.CTkButton(
-    app,
-    text="Delete Password",
-    command=delete_credential
-)
-
-delete_button.pack(pady=5)
-
-list_button = ctk.CTkButton(
-    app,
-    text="List Saved Websites",
-    command=show_credentials
-)
-
-list_button.pack(pady=5)
-
-# -----------------------------
-# OUTPUT BOX
-# -----------------------------
-
-output_label = ctk.CTkLabel(
-    app,
-    text="Stored Credentials"
-)
-
-output_label.pack(pady=(20, 5))
-
-output_box = ctk.CTkTextbox(
-    app,
-    width=550,
-    height=220
-)
-
-output_box.pack(pady=10)
-
-# -----------------------------
-# START APP
-# -----------------------------
-
-app.mainloop()
+login_window.mainloop()
