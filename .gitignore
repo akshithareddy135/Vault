@@ -36,6 +36,4 @@ Thumbs.db
 
 *.log
 
-# Test Files
 
-test_*.py
