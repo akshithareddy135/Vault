@@ -1,39 +1,28 @@
 # Python
+__pycache__/
+*.pyc
 
-**pycache**/
-*.py[cod]
-*$py.class
-
-# Virtual Environment
-
+# Virtual Environments
 venv/
-env/
 .venv/
+env/
 
-# SQLite Database
-
+# Database
 vault.db
 
-# Encryption Keys (future)
-
-*.key
-
-# Environment Variables
-
-.env
+# Encryption Key
+secret.key
 
 # IDE Files
-
 .vscode/
 .idea/
 
-# OS Files
+# Logs
+*.log
 
+# OS Files
 .DS_Store
 Thumbs.db
 
-# Logs
-
-*.log
-
-
+# Environment Variables
+.env
