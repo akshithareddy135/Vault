@@ -1,0 +1,41 @@
+# Python
+
+**pycache**/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+
+venv/
+env/
+.venv/
+
+# SQLite Database
+
+vault.db
+
+# Encryption Keys (future)
+
+*.key
+
+# Environment Variables
+
+.env
+
+# IDE Files
+
+.vscode/
+.idea/
+
+# OS Files
+
+.DS_Store
+Thumbs.db
+
+# Logs
+
+*.log
+
+# Test Files
+
+test_*.py
